@@ -5,6 +5,18 @@ struct AltSource: Decodable {
     let apps: [SourceApp]
 }
 
+struct Repo: Codable, Identifiable, Hashable {
+    let id: UUID
+    var nome: String
+    var url: String
+
+    init(id: UUID = UUID(), nome: String, url: String) {
+        self.id = id
+        self.nome = nome
+        self.url = url
+    }
+}
+
 enum FlexInt: Decodable {
     case number(Int64)
 
@@ -61,8 +73,6 @@ struct SourceApp: Decodable, Identifiable, Hashable {
         iconURL = try c.decodeIfPresent(String.self, forKey: .iconURL)
         subtitle = try c.decodeIfPresent(String.self, forKey: .subtitle)
 
-        // Formato novo (AltSource 1.1+): campos dentro de versions[].
-        // Formato antigo: campos direto no app. Aceita os dois.
         let atual = try c.decodeIfPresent([VersionEntry].self, forKey: .versions)?.first
         version = try c.decodeIfPresent(String.self, forKey: .version) ?? atual?.version
         versionDate = try c.decodeIfPresent(String.self, forKey: .versionDate) ?? atual?.date

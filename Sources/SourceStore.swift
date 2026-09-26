@@ -46,18 +46,22 @@ final class SourceStore: ObservableObject {
                 mensagem = "Servidor respondeu HTTP \(http.statusCode)"
                 return
             }
-            let src = try JSONDecoder().decode(AltSource.self, from: data)
-            source = src
-            apps = src.apps
-            mensagem = "\(src.apps.count) apps em \(src.name)"
+            do {
+                let src = try JSONDecoder().decode(AltSource.self, from: data)
+                source = src
+                apps = src.apps
+                mensagem = "\(src.apps.count) apps em \(src.name)"
+            } catch let e as DecodingError {
+                mensagem = "Formato inesperado: \(descreverErro(e))"
+            }
         } catch {
             mensagem = "Erro: \(error.localizedDescription)"
         }
     }
 
     func baixar(_ app: SourceApp) async {
-        guard let url = URL(string: app.downloadURL) else {
-            mensagem = "downloadURL inválida"
+        guard let ds = app.downloadURL, let url = URL(string: ds) else {
+            mensagem = "Esse app não tem downloadURL"
             return
         }
         baixando = app.bundleIdentifier

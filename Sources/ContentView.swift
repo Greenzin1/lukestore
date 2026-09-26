@@ -34,6 +34,13 @@ struct ContentView: View {
             .overlay(alignment: .top) {
                 if store.carregando {
                     ProgressView().padding(8).background(.thinMaterial, in: Capsule())
+                } else if !store.mensagem.isEmpty {
+                    Text(store.mensagem)
+                        .font(.caption)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(.thinMaterial, in: Capsule())
+                        .padding(.top, 4)
                 }
             }
         }

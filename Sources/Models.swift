@@ -75,12 +75,12 @@ func descreverErro(_ e: DecodingError) -> String {
     switch e {
     case .keyNotFound(let k, _):
         return "falta a chave \"\(k.stringValue)\""
-    case .valueNotFound(let k, _):
-        return "valor ausente em \"\(k.stringValue)\""
+    case .valueNotFound(_, let ctx):
+        return "valor ausente em \(ctx.codingPath.map { $0.stringValue }.joined(separator: "."))"
     case .typeMismatch(_, let ctx):
-        return "tipo errado em \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
+        return "tipo errado em \(ctx.codingPath.map { $0.stringValue }.joined(separator: "."))"
     case .dataCorrupted(let ctx):
-        return "JSON corrompido em \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
+        return "JSON corrompido em \(ctx.codingPath.map { $0.stringValue }.joined(separator: "."))"
     @unknown default:
         return e.localizedDescription
     }

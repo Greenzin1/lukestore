@@ -15,9 +15,16 @@ struct ReposView: View {
                 .padding(32)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                List(repos.repos) { repo in
-                    NavigationLink(value: Rota.apps(repo)) {
-                        RepoRow(repo: repo)
+                List {
+                    ForEach(repos.repos) { repo in
+                        NavigationLink(value: Rota.apps(repo)) {
+                            RepoRow(repo: repo)
+                        }
+                    }
+                    .onDelete { indice in
+                        for i in indice.sorted(by: >) {
+                            repos.remover(repos.repos[i])
+                        }
                     }
                 }
             }

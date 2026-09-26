@@ -3,6 +3,7 @@ import SwiftUI
 enum Aba: Hashable {
     case home
     case repos
+    case buscar
     case temas
     case config
 }
@@ -42,6 +43,12 @@ struct MainView: View {
             }
             .tabItem { Label("Repos", systemImage: "square.grid.2x2") }
             .tag(Aba.repos)
+
+            NavigationStack {
+                SearchView()
+            }
+            .tabItem { Label("Buscar", systemImage: "magnifyingglass") }
+            .tag(Aba.buscar)
 
             NavigationStack {
                 TemasView()

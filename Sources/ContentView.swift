@@ -3,6 +3,8 @@ import SwiftUI
 enum Aba: Hashable {
     case home
     case repos
+    case temas
+    case config
 }
 
 enum Rota: Hashable {
@@ -13,101 +15,48 @@ struct MainView: View {
     @EnvironmentObject private var store: SourceStore
     @EnvironmentObject private var temas: TemaStore
     @State private var aba: Aba = .home
-    @State private var caminho: [Rota] = []
-    @State private var mostrarTemas = false
-    @State private var mostrarConfig = false
+    @State private var mostrarAdd = false
 
     var body: some View {
-        GeometryReader { geo in
-            HStack(spacing: 0) {
-                if geo.size.width >= 700 {
-                    SidebarView(aba: $aba) {
-                        mostrarTemas = true
-                    } onConfig: {
-                        mostrarConfig = true
-                    }
-                    .environmentObject(temas)
-                    Divider()
-                }
-                conteudo
+        TabView(selection: $aba) {
+            NavigationStack {
+                HomeView(aba: $aba)
             }
+            .tabItem { Label("Home", systemImage: "house") }
+            .tag(Aba.home)
+
+            NavigationStack {
+                ReposView()
+                    .navigationDestination(for: Rota.self) { rota in
+                        switch rota {
+                        case .apps(let repo): RepoAppsView(repo: repo)
+                        }
+                    }
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button { mostrarAdd = true } label: {
+                                Image(systemName: "plus")
+                            }
+                        }
+                    }
+            }
+            .tabItem { Label("Repos", systemImage: "square.grid.2x2") }
+            .tag(Aba.repos)
+
+            NavigationStack {
+                TemasView()
+            }
+            .tabItem { Label("Temas", systemImage: "paintbrush") }
+            .tag(Aba.temas)
+
+            NavigationStack {
+                ConfigView()
+            }
+            .tabItem { Label("Config", systemImage: "gearshape") }
+            .tag(Aba.config)
         }
         .tint(temas.atual.cor)
-        .sheet(isPresented: $mostrarTemas) { TemasView() }
-        .sheet(isPresented: $mostrarConfig) { ConfigView() }
-    }
-
-    private var conteudo: some View {
-        NavigationStack(path: $caminho) {
-            Group {
-                switch aba {
-                case .home: HomeView(aba: $aba)
-                case .repos: ReposView()
-                }
-            }
-            .navigationDestination(for: Rota.self) { rota in
-                switch rota {
-                case .apps(let repo): RepoAppsView(repo: repo)
-                }
-            }
-            .toolbar {
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    if aba == .repos && caminho.isEmpty {
-                        Button { mostrarAdd = true } label: { Image(systemName: "plus") }
-                    }
-                    Button { aba = .home; caminho = [] } label: {
-                        Image(systemName: "house")
-                    }
-                    Button { aba = .repos; caminho = [] } label: {
-                        Image(systemName: "square.grid.2x2")
-                    }
-                    Button { mostrarTemas = true } label: { Image(systemName: "paintbrush") }
-                    Button { mostrarConfig = true } label: { Image(systemName: "gearshape") }
-                }
-            }
-        }
         .sheet(isPresented: $mostrarAdd) { AddRepoSheet() }
-    }
-
-    @State private var mostrarAdd = false
-}
-
-struct SidebarView: View {
-    @EnvironmentObject private var temas: TemaStore
-    @Binding var aba: Aba
-    var onTemas: () -> Void
-    var onConfig: () -> Void
-
-    var body: some View {
-        VStack(spacing: 6) {
-            botao("Home", "house", selecionado: aba == .home) { aba = .home }
-            botao("Repos", "square.grid.2x2", selecionado: aba == .repos) { aba = .repos }
-            botao("Temas", "paintbrush", selecionado: false, acao: onTemas)
-            botao("Config", "gearshape", selecionado: false, acao: onConfig)
-            Spacer()
-        }
-        .padding(.top, 24)
-        .frame(width: 150)
-        .frame(maxHeight: .infinity)
-        .background(.thinMaterial)
-    }
-
-    private func botao(_ nome: String, _ icone: String, selecionado: Bool, acao: @escaping () -> Void) -> some View {
-        Button(action: acao) {
-            HStack(spacing: 8) {
-                Image(systemName: icone)
-                Text(nome)
-            }
-            .font(.subheadline.weight(selecionado ? .semibold : .regular))
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .background(
-                selecionado ? temas.atual.cor.opacity(0.2) : .clear,
-                in: RoundedRectangle(cornerRadius: 8)
-            )
-            .foregroundStyle(selecionado ? temas.atual.cor : .primary)
-        }
-        .padding(.horizontal, 10)
     }
 }
 
